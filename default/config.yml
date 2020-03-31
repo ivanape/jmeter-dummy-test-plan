@@ -1,23 +1,47 @@
 ---
-execution:
-- load-iterations: 50
-  load-concurrency: 10
-  load-ramp-up: 1m
-  load-hold-for: 1m30s
+configuration:
+  default-executor: jmeter
 
-scanarios:
-  id: dummy-id
-  run-name: dummy-name
+executions:
+  - executor: jmeter
+    scenario: minimal-test
+  - executor: jmeter
+    scenario: full-coverage
+  - executor: jmeter
+    scenario: custom-thread-group
 
+scenarios:
+  minimal-test:    
+    script: default/test-plan.jmx
+    with-configuration: # La configuración se aplicará al Thread Group por defecto de JMeter
+      load-iterations: 50
+      load-concurrency: 10
+      load-ramp-up: 1m
+
+  full-coverage:
+    script: default/*
+    with-configuration: # La configuración se aplica a TODOS los JMX
+      load-ramp-up: 2m
+      load-concurrency: 100
+      load-hold-for: 5m30s #Definir que prima más (configuración por duración o por repeticiones)
+
+  custom-thread-group:
+    script: default/custom-thread-group.jmx
+    with-configuration: # Opcional 
+      inherit: true
+      jmeter: # Injectar propiedades al modulo de Jmeter
+        properties:
+          CSV_PATH: large-products.csv  
+        user.properties: my-custom.properties 
+  
 dependencies:
-  services:
-    - service: CustomerService
-      mock-service: CustomerServiceMock
-      mock-service-template: Identity (OK responses)
-
-    - service: PaymentService
-      mock-service: PaymentServiceMock
-      transactions:
-        - ProcessPayment
-        - AddPaymentMethod
-        - RemovePaymentMethod
+  mock-services:
+    - service: ProductService
+      provider: trafficparrot
+      mappings-dir: product/trafficparrot_mappings/
+    - service: StockServices
+      provider: trafficparrot
+      mappings-dir: stock/trafficparrot_mappings/
+   
+# reporting: #Definir
+  
