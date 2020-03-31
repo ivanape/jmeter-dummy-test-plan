@@ -1,0 +1,23 @@
+---
+execution:
+- load-iterations: 50
+  load-concurrency: 10
+  load-ramp-up: 1m
+  load-hold-for: 1m30s
+
+scanarios:
+  id: dummy-id
+  run-name: dummy-name
+
+dependencies:
+  services:
+    - service: CustomerService
+      mock-service: CustomerServiceMock
+      mock-service-template: Identity (OK responses)
+
+    - service: PaymentService
+      mock-service: PaymentServiceMock
+      transactions:
+        - ProcessPayment
+        - AddPaymentMethod
+        - RemovePaymentMethod
